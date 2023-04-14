@@ -1,9 +1,11 @@
+#Importaciones necesarias para el trabajo de este módulo:
 from app import app, db, login_manager
 from flask import Flask, render_template, request, url_for, redirect, session, flash, Blueprint
 from flask_login import login_required, login_user
-from app.models import Usuario, Solicitud, Estado, get_users, get_solicitudes, get_estados
+from app.models import Usuario, Solicitud, Estado
+from app.models import get_users, get_solicitudes, get_estados
 
-#Blueprint de la applicación
+#Instancia de nlueprint de la aplicación
 sigesolBP = Blueprint('app', __name__)
 
 #####     Rutas     #####
@@ -222,9 +224,7 @@ def gestionarSolicitud(id, idSolicitud, departamento, unidad):
     estado = db.session.execute(db.select(Estado).filter_by(fkIdSolicitud=idSolicitud)).scalar_one()
     return render_template('views/funcionario/gestionarSolicitud.html', id=id, idSolicitud=idSolicitud, solicitud=solicitud, estado=estado, departamento=departamento, unidad=unidad)
 
-
 #####     Rutas CRUD     #####
-
 ###   UPDATES   ###
 #UPDATE USUARIO
 @app.route('/editu/<int:id>', methods=['GET','POST'])
@@ -264,7 +264,6 @@ def Aedit_solicitud(idSolicitud):
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     return render_template('views/editarSolicitud.html',solicitud=solicitud)
 
-
 #UPDATE SOLICITUD(OIRS)
 #Edit de solicitud que redirige a la vista de OIRS
 @app.route('/oedits/<int:idSolicitud>', methods=['GET','POST']) 
@@ -284,7 +283,6 @@ def Oedit_solicitud(idSolicitud):
         return redirect(url_for('oirsCrudSolicitudes'))
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     return render_template('views/editarSolicitud.html',solicitud=solicitud)
-
 
 ###   DELETES   ###
 #DELETE SOLICITUD(Admin)
