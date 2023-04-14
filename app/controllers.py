@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, url_for, redirect, session, f
 from flask_login import login_required, login_user
 from app.models import Usuario, Solicitud, Estado
 from app.models import get_users, get_solicitudes, get_estados
+from datetime import datetime
 
 #Instancia de nlueprint de la aplicación
 sigesolBP = Blueprint('app', __name__)
