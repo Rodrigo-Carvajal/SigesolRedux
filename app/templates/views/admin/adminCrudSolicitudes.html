@@ -7,7 +7,7 @@
         <div class="h-100 p-3 text-white bg-dark ">
             <h2>Crud de solicitudes</h2>
             <hr>
-            <form action="" method="POST">
+            <form action="" method="POST" enctype="multipart/form-data">
                 <div class="row g-2 bg-light"> 
                     <div class="container text-center col-lg-12 p-5">
                         <div class="col-lg-6 form-floating m-2">
@@ -75,6 +75,12 @@
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="horaDeIngreso" id="horaDeIngreso" value="{{ current_time }}">
                             <input type="hidden" name="unidad" id="unidad" value="Sin asignar">
+                        </div>                        
+                    </div>
+                    <div class="container text-center col-lg-12">                        
+                        <div class="mb-3">
+                            <label for="documento" class="form-label">Cargar documento</label>
+                            <input type="file" class="form-control" name="documento" id="documento" placeholder="" aria-describedby="fileHelpId">
                         </div>
                     </div>
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -109,6 +115,7 @@
                                 <th scope="col">Tipo:</th>
                                 <th scope="col">Departamento:</th>
                                 <th scope="col">Unidad:</th>
+                                <th scope="col">Documento:</th>
                                 <th scope="col">Funcionario:</th>
                                 <th scope="col">Acciones</th>
                             </tr>
@@ -125,6 +132,7 @@
                                     <td>{{ solicitud.tipo }}</td>
                                     <td>{{ solicitud.departamento }}</td>
                                     <td>{{ solicitud.unidad }}</td>
+                                    <td><a class="btn btn-primary" href="/download_file/{{solicitud.documento}}">Descargar</a></td>
                                     <td>{{ solicitud.usuarioID }}</td>
                                     <td>
                                         <a name="editSolicitud" id="editSolicitud" class="btn btn-info" href="/aedits/{{solicitud.idSolicitud}}" role="button"><i class="fa-solid fa-pen-nib"></i> Editar</a>

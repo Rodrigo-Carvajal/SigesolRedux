@@ -4,7 +4,8 @@ class Config:
 
 #Clase usada para la configuración de la aplicación en desarrollo:
 class DevelopmentConfig():
-    DEBUG=True    
+    DEBUG=True
+    
 
 #Diccionario de las distintas configuraciones existentes:    
 config = {

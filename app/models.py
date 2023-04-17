@@ -43,11 +43,12 @@ class Solicitud(db.Model):
     tipo = db.Column(db.String(20), nullable=False)
     departamento = db.Column(db.String(60), nullable=False)
     unidad = db.Column(db.String(60))
-    #activa = db.Column(db.Boolean, default=True, nullable=False)
+    documento = db.Column(db.String(100))
+    activa = db.Column(db.Boolean, default=True, nullable=False)
     usuarioID = db.Column(db.String(30), db.ForeignKey('usuarios.nombreUsuario'), nullable=False)
     estados = db.relationship('Estado', backref='solicitud', lazy=True)
 
-    def __init__(self, idSolicitud, numero, fechaDeIngreso, horaDeIngreso, fechaDeVencimiento, nombreSolicitante, materia, tipo, departamento, unidad, usuarioID):
+    def __init__(self, idSolicitud, numero, fechaDeIngreso, horaDeIngreso, fechaDeVencimiento, nombreSolicitante, materia, tipo, departamento, unidad, documento, usuarioID):
         self.idSolicitud = idSolicitud
         self.numero = numero
         self.fechaDeIngreso = fechaDeIngreso
@@ -58,6 +59,7 @@ class Solicitud(db.Model):
         self.tipo = tipo
         self.departamento = departamento
         self.unidad = unidad
+        self.documento = documento
         self.usuarioID = usuarioID
 
     def __repr__(self):
@@ -81,7 +83,6 @@ class Estado(db.Model):
         self.nombreUsuario = nombreUsuario
         self.descripcionProceso = descripcionProceso
         self.fechaModificacion = fechaModificacion
-
         self.designadoA = designadoA
         self.estadoActual = estadoActual
     
@@ -112,7 +113,7 @@ def get_solicitudes():
     #all_solicitudes = Solicitud.query.all()
     all_solicitudes = db.session.execute(db.select(Solicitud).order_by(Solicitud.idSolicitud)).scalars()
     for solicitud in all_solicitudes:
-        solicitudes.append({"idSolicitud":solicitud.idSolicitud, "numero":solicitud.numero, "fechaDeIngreso":solicitud.fechaDeIngreso, "horaDeIngreso":solicitud.horaDeIngreso, "fechaDeVencimiento":solicitud.fechaDeVencimiento, "nombreSolicitante":solicitud.nombreSolicitante, "materia":solicitud.materia, "tipo":solicitud.tipo, "departamento":solicitud.departamento, "unidad":solicitud.unidad, "usuarioID":solicitud.usuarioID})
+        solicitudes.append({"idSolicitud":solicitud.idSolicitud, "numero":solicitud.numero, "fechaDeIngreso":solicitud.fechaDeIngreso, "horaDeIngreso":solicitud.horaDeIngreso, "fechaDeVencimiento":solicitud.fechaDeVencimiento, "nombreSolicitante":solicitud.nombreSolicitante, "materia":solicitud.materia, "tipo":solicitud.tipo, "departamento":solicitud.departamento, "unidad":solicitud.unidad, "documento":solicitud.documento, "usuarioID":solicitud.usuarioID})
     return solicitudes
 
 #Función que retorna todos los estados de una solicitud
