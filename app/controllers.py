@@ -89,8 +89,7 @@ def adminCrudSolicitudes():
         archivo = request.files['documento']
         nombreArchivo = secure_filename(archivo.filename)
         binary = archivo.read()
-        if nombreArchivo != '':        
-            archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], nombreArchivo))
+        if nombreArchivo != '':
             solicitud = Solicitud(
                 idSolicitud= request.form['idSolicitud'],
                 numero = request.form['numero'],
@@ -368,7 +367,7 @@ def delete_usuario(id):
 def download(idSolicitud):
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     filename = solicitud.documento
-    return send_file(BytesIO(solicitud.docBinary), download_name=filename)
+    return send_file(BytesIO(solicitud.docBinary), download_name=filename, as_attachment=True)
 
 #Rutas de error
 #404 y 500
