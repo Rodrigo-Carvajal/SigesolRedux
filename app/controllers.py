@@ -1,20 +1,17 @@
 #Importaciones necesarias para el trabajo de este módulo:
 import os
+from io import BytesIO
 from app import app, db, login_manager, ALLOWED_EXTENSIONS, csrf
 from flask import render_template, request, url_for, redirect, session, flash, Blueprint, send_from_directory, send_file
 from flask_login import login_required, login_user, logout_user
 from werkzeug.utils import secure_filename
 
 from app.models import Usuario, Solicitud, Estado
-from app.models import get_users, get_solicitudes, get_estados
+from app.models import get_users, get_solicitudes, get_estados, allowed_file
 from datetime import datetime
 
 #Instancia de nlueprint de la aplicación
 sigesolBP = Blueprint('app', __name__)
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #####     Rutas     #####
 #RUTAS PRINCIPALES Y DE AUTH
@@ -90,26 +87,47 @@ def adminCrudSolicitudes():
     current_time = datetime.now().time().strftime('%H:%M')
     if request.method == "POST":
         archivo = request.files['documento']
-        nombreArchivo = secure_filename(archivo.filename)        
-        solicitud = Solicitud(
-            idSolicitud= request.form['idSolicitud'],
-            numero = request.form['numero'],
-            fechaDeIngreso = request.form['fechaDeIngreso'],
-            horaDeIngreso = request.form['horaDeIngreso'],
-            fechaDeVencimiento = request.form['fechaDeVencimiento'],
-            nombreSolicitante = request.form['nombreSolicitante'],
-            materia = request.form['materia'],
-            tipo = request.form['tipo'],
-            departamento = request.form['departamento'],
-            unidad = request.form['unidad'],
-            usuarioID = request.form['funcionario'], 
-            documento = nombreArchivo
-        )            
-        archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], nombreArchivo))
-        db.session.add(solicitud)
-        db.session.commit()
-        flash("¡Solicitud creada exitosamente!", 'success')
-        return redirect(url_for('adminCrudSolicitudes'))
+        nombreArchivo = secure_filename(archivo.filename)
+        binary = archivo.read()
+        if nombreArchivo != '':        
+            archivo.save(os.path.join(app.config['UPLOAD_FOLDER'], nombreArchivo))
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+                documento = nombreArchivo,
+                docBinary = binary
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
+            return redirect(url_for('adminCrudSolicitudes'))
+        else:
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
+            return redirect(url_for('adminCrudSolicitudes'))
     return render_template('views/admin/adminCrudSolicitudes.html', solicitudes=solicitudes, current_time=current_time)
 
 #RUTAS OIRS
@@ -337,7 +355,6 @@ def odeletes(idSolicitud):
 @app.route('/deleteu/<int:id>')
 @login_required
 def delete_usuario(id):
-
     usuario = db.session.execute(db.select(Usuario).filter_by(id=id)).scalar_one()
     db.session.delete(usuario)
     db.session.commit()
@@ -345,9 +362,17 @@ def delete_usuario(id):
     usuarios = get_users()
     return redirect(url_for('adminCrudUsuarios', usuarios=usuarios))
 
-#404 y 500
+#Descarga de docs
+@app.route('/download/<int:idSolicitud>')
+@login_required
+def download(idSolicitud):
+    solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
+    filename = solicitud.documento
+    return send_file(BytesIO(solicitud.docBinary), download_name=filename)
 
-@app.route('/error4004', methods=['POST'])
+#Rutas de error
+#404 y 500
+@app.route('/error404')
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('views/404.html'), 404
@@ -355,12 +380,3 @@ def page_not_found(e):
 @app.errorhandler(500)
 def page_not_found(e):
     return render_template('views/404.html'), 500
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/uploads/<string:documento>')
-def download_file(name):
-    return send_file(app.config['UPLOAD_FOLDER'], name)
-    

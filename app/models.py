@@ -1,5 +1,5 @@
 #Importaciones necesarias para el trabajo de este módulo:
-from app import db, login_manager
+from app import db, login_manager, ALLOWED_EXTENSIONS
 from flask_login import UserMixin
 from datetime import datetime
 
@@ -44,11 +44,12 @@ class Solicitud(db.Model):
     departamento = db.Column(db.String(60), nullable=False)
     unidad = db.Column(db.String(60))
     documento = db.Column(db.String(100))
+    docBinary = db.Column(db.LargeBinary)
     activa = db.Column(db.Boolean, default=True, nullable=False)
     usuarioID = db.Column(db.String(30), db.ForeignKey('usuarios.nombreUsuario'), nullable=False)
     estados = db.relationship('Estado', backref='solicitud', lazy=True)
 
-    def __init__(self, idSolicitud, numero, fechaDeIngreso, horaDeIngreso, fechaDeVencimiento, nombreSolicitante, materia, tipo, departamento, unidad, documento, usuarioID):
+    def __init__(self, idSolicitud, numero, fechaDeIngreso, horaDeIngreso, fechaDeVencimiento, nombreSolicitante, materia, tipo, departamento, unidad, documento, docBinary, usuarioID):
         self.idSolicitud = idSolicitud
         self.numero = numero
         self.fechaDeIngreso = fechaDeIngreso
@@ -59,6 +60,7 @@ class Solicitud(db.Model):
         self.tipo = tipo
         self.departamento = departamento
         self.unidad = unidad
+        self.docBinary = docBinary
         self.documento = documento
         self.usuarioID = usuarioID
 
@@ -124,6 +126,11 @@ def get_estados():
     for estado in all_estados:
         estados.append({"idInternoDepto":estado.idInternoDepto, "fkIdSolicitud":estado.fkIdSolicitud, "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "estadoActual":estado.estadoActual})
     return estados
+
+#Función que determina si el archivo es válido o no
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @login_manager.user_loader
 def load_user(id):
