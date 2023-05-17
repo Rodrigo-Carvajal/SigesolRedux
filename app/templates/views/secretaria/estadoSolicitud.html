@@ -28,7 +28,7 @@
                         </thead>
                         <tbody>
                             {% for estado in estados %}
-                                {% if idSolicitud == estado.fkIdSolicitud %}
+                                
                                     <tr class="scope">
                                         <td>{{ estado.fkIdSolicitud }}</td>
                                         <td>{{ estado.idInternoDepto }}</td>
@@ -36,14 +36,14 @@
                                         <td>{{ estado.nombreUsuario }}</td>
                                         <td>{{ estado.descripcionProceso }}</td>
                                         <td>{{ estado.fechaModificacion }}</td>
-                                        <td>{{ estado.antecedentePDF }}</td>
+                                        <td><a class="btn btn-primary" href="/download/{{estado.fkIdSolicitud}}">Descargar</a></td>
                                         <td>{{ estado.designadoA }}</td>
                                         <td>{{ estado.estadoActual }}</td>
                                         <td>
                                             <a name="editSolicitud" id="editSolicitud" class="btn btn-info" href="/estadoSolicitud/{{solicitud.idSolicitud}}" role="button"><i class="fa-solid fa-eye"></i> Ver estado</a>
                                         </td>
                                     </tr>
-                                {% endif %}
+                                
                             {% endfor %}
                         </tbody>
                     </table>

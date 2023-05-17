@@ -1,6 +1,5 @@
 {% extends "layouts/funcionarioLayout.html" %}
 {% block title %}Funcionario{% endblock %}
-
 {% block body %}
     <div class="row align-items-md-stretch">
         <div class="col-md-12">
@@ -47,10 +46,16 @@
                                 <div class="mb-3 form-floating">
                                 <textarea class="form-control" name="descripcionProceso" id="descripcionProceso" rows="3"></textarea>
                                 <label for="descripcionProceso">Escriba una breve descripción del proceso actual:</label>
-                                </div>                                
+                                </div>                                                          
                                 <div class="mb-3 form-floating">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                </div>
+                                </div>                                
+                            </div>
+                        </div>                        
+                        <div class="container text-center col-lg-12">                        
+                            <div class="mb-2">
+                                <label for="documento" class="form-label">Cargar documento</label>
+                                <input type="file" class="form-control" name="documento" id="documento" placeholder="" aria-describedby="fileHelpId">
                             </div>
                         </div>
                         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -65,8 +70,8 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                        {% endwith %}
-                        <div class="row-md">
+                        {% endwith %}      
+                        <div class="row-md">                            
                             <button type="submit" class="btn btn-primary mb-2"> <i class="fa-solid fa-pen-nib"></i> Actualizar estado</button>        
                         </div>
                     </div>
