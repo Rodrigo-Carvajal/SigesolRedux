@@ -70,15 +70,18 @@ class Solicitud(db.Model):
 class Estado(db.Model):
     __tablename__ = 'estadoSolicitudes'
     fkIdSolicitud = db.Column(db.Integer, db.ForeignKey('solicitudes.idSolicitud'), primary_key=True, nullable=False)
-    idInternoDepto = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True)
-    idModificacion = db.Column(db.Integer, primary_key=True)
+    idInternoDepto = db.Column(db.Integer, nullable=False)
+    idModificacion = db.Column(db.Integer, nullable=False)
+    db.UniqueConstraint('fkIdSolicitud', 'idInternoDepto', 'idModificacion')
     nombreUsuario = db.Column(db.String(20), db.ForeignKey('usuarios.nombreUsuario'), nullable=False)
     descripcionProceso = db.Column(db.String(100), nullable=False)
     fechaModificacion = db.Column(db.Date, default=datetime.now().strftime('%d-%m-%Y'), nullable=False)
     designadoA = db.Column(db.String(60), nullable=False)
+    nombreAntecedente = db.Column(db.String(100))
+    antecedenteBinary = db.Column(db.LargeBinary)
     estadoActual = db.Column(db.String(20), nullable=False)
 
-    def __init__(self, idInternoDepto, fkIdSolicitud, idModificacion, nombreUsuario, descripcionProceso, fechaModificacion, designadoA, estadoActual):
+    def __init__(self, idInternoDepto, fkIdSolicitud, idModificacion, nombreUsuario, descripcionProceso, fechaModificacion, designadoA, nombreAntecedente, antecedenteBinary, estadoActual):
         self.idInternoDepto = idInternoDepto
         self.fkIdSolicitud = fkIdSolicitud
         self.idModificacion = idModificacion
@@ -86,16 +89,9 @@ class Estado(db.Model):
         self.descripcionProceso = descripcionProceso
         self.fechaModificacion = fechaModificacion
         self.designadoA = designadoA
+        self.nombreAntecedente = nombreAntecedente
+        self.antecedenteBinary = antecedenteBinary
         self.estadoActual = estadoActual
-    
-    def generar_id_interno(self):
-        ultima_solicitud = Solicitud.query.filter_by(idInternoDepto=self.idInternoDepto).order_by(Solicitud.idInternoDepto.desc()).first()
-        if ultima_solicitud is None:
-            return f'{self.departamento.abreviacion}-001'
-        else:
-            ultimo_id = int(ultima_solicitud.id_interno.split('-')[-1])
-            nuevo_id = ultimo_id + 1
-            return f'{self.departamento.abreviacion}-{nuevo_id:03d}'
 
     def __repr__(self):
         return f"Estado de la solicitud('{self.idInternoDepto}','{self.fkIdSolicitud}' modificada N° '{self.idModificacion}' realizada por el usuario '{self.nombreUsuario}' en la fecha '{self.fechaModificacion}','{self.estado}','{self.designadoA}')"
@@ -112,25 +108,39 @@ def get_users():
 #Funcion que retorna todos las solicitudes registrados en la base de datos
 def get_solicitudes():
     solicitudes = []
-    #all_solicitudes = Solicitud.query.all()
     all_solicitudes = db.session.execute(db.select(Solicitud).order_by(Solicitud.idSolicitud)).scalars()
     for solicitud in all_solicitudes:
         solicitudes.append({"idSolicitud":solicitud.idSolicitud, "numero":solicitud.numero, "fechaDeIngreso":solicitud.fechaDeIngreso, "horaDeIngreso":solicitud.horaDeIngreso, "fechaDeVencimiento":solicitud.fechaDeVencimiento, "nombreSolicitante":solicitud.nombreSolicitante, "materia":solicitud.materia, "tipo":solicitud.tipo, "departamento":solicitud.departamento, "unidad":solicitud.unidad, "documento":solicitud.documento, "usuarioID":solicitud.usuarioID})
     return solicitudes
 
-#Función que retorna todos los estados de una solicitud
+#Función que retorna todos los estados 
 def get_estados():
     estados = []
-    #all_solicitudes = Solicitud.query.all()
-    all_estados = db.session.execute(db.select(Estado).order_by(Estado.fkIdSolicitud)).scalars()
+    all_estados = db.session.execute(db.select(Estado)).scalars()
     for estado in all_estados:
-        estados.append({"idInternoDepto":estado.idInternoDepto, "fkIdSolicitud":estado.fkIdSolicitud, "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "estadoActual":estado.estadoActual})
+        estados.append({"fkIdSolicitud":estado.fkIdSolicitud, "idInternoDepto":estado.idInternoDepto,  "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "nombreAntecedente":estado.nombreAntecedente, "antecedenteBinary":estado.antecedenteBinary, "estadoActual":estado.estadoActual})
     return estados
 
+"""
+#Función que retorna todos los estados de una solicitud
+def get_estados_solicitud(idSolicitud):
+    estados = []
+    all_estados = db.session.execute(db.select(Estado).filter_by(id=idSolicitud)).scalars()
+    for estado in all_estados:
+        estados.append({"id":estado.id, "fkIdSolicitud":estado.fkIdSolicitud, "idInternoDepto":estado.idInternoDepto,  "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "nombreAntecedente":estado.nombreAntecedente, "antecedenteBinary":estado.antecedenteBinary, "estadoActual":estado.estadoActual})
+    return estados
+"""
 #Función que determina si el archivo es válido o no
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+#Función que genera el id interno del departamento para cada modificación que reciba
+"""def generar_id_interno(id):
+    solicitud = db.session.execute(db.select(Solicitud).order_by(idSolicitud=id)).scalar_one()
+    estado = db.session.execute(db.count(Estado).order_by(fkSolicitud=id)).scalars()
+    if estado:
+"""
 
 @login_manager.user_loader
 def load_user(id):

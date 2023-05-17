@@ -2,7 +2,7 @@
 import os
 from io import BytesIO
 from app import app, db, login_manager, ALLOWED_EXTENSIONS, csrf
-from flask import render_template, request, url_for, redirect, session, flash, Blueprint, send_from_directory, send_file
+from flask import render_template, request, url_for, redirect, session, flash, Blueprint, send_file
 from flask_login import login_required, login_user, logout_user
 from werkzeug.utils import secure_filename
 
@@ -141,23 +141,47 @@ def oirs():
 def oirsCrudSolicitudes():
     solicitudes = get_solicitudes()
     current_time = datetime.now().time().strftime('%H:%M')
-    if request.method == "POST":        
-        solicitud = Solicitud(
-            idSolicitud= request.form['idSolicitud'],
-            numero = request.form['numero'],
-            fechaDeIngreso = request.form['fechaDeIngreso'],
-            horaDeIngreso = request.form['horaDeIngreso'],
-            fechaDeVencimiento = request.form['fechaDeVencimiento'],
-            nombreSolicitante = request.form['nombreSolicitante'],
-            materia = request.form['materia'],
-            tipo = request.form['tipo'],
-            departamento = request.form['departamento'],
-            unidad = request.form['unidad'],
-            usuarioID = request.form['funcionario']
-        )
-        db.session.add(solicitud)
-        db.session.commit()
-        flash("¡Solicitud creada exitosamente!", 'success')
+    if request.method == "POST":
+        archivo = request.files['documento']
+        nombreArchivo = secure_filename(archivo.filename)
+        binary = archivo.read()
+        if nombreArchivo != '':
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+                documento = nombreArchivo,
+                docBinary = binary
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
+            return redirect(url_for('oirsCrudSolicitudes'))
+        else:
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
         return redirect(url_for('oirsCrudSolicitudes'))
     return render_template('views/oirs/oirsCrudSolicitudes.html', solicitudes=solicitudes, current_time=current_time)
 
@@ -166,6 +190,55 @@ def oirsCrudSolicitudes():
 @login_required
 def secretaria():
     return render_template('/views/secretaria/secretaria.html')
+
+@app.route('/secCrudSolicitudes', methods=['GET','POST'])
+@login_required
+def secCrudSolicitudes():
+    solicitudes = get_solicitudes()
+    current_time = datetime.now().time().strftime('%H:%M')
+    if request.method == "POST":
+        archivo = request.files['documento']
+        nombreArchivo = secure_filename(archivo.filename)
+        binary = archivo.read()
+        if nombreArchivo != '':
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+                documento = nombreArchivo,
+                docBinary = binary
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
+            return redirect(url_for('secCrudSolicitudes'))
+        else:
+            solicitud = Solicitud(
+                idSolicitud= request.form['idSolicitud'],
+                numero = request.form['numero'],
+                fechaDeIngreso = request.form['fechaDeIngreso'],
+                horaDeIngreso = request.form['horaDeIngreso'],
+                fechaDeVencimiento = request.form['fechaDeVencimiento'],
+                nombreSolicitante = request.form['nombreSolicitante'],
+                materia = request.form['materia'],
+                tipo = request.form['tipo'],
+                departamento = request.form['departamento'],
+                unidad = request.form['unidad'],
+                usuarioID = request.form['funcionario'], 
+            )                    
+            db.session.add(solicitud)
+            db.session.commit()
+            flash("¡Solicitud creada exitosamente!", 'success')
+        return redirect(url_for('secCrudSolicitudes'))
+    return render_template('views/secretaria/secretariaCrudSolicitudes.html', solicitudes=solicitudes, current_time=current_time)
 
 @app.route('/secreSolIngresadas', methods=['GET','POST'])
 @login_required
@@ -180,22 +253,42 @@ def secreSolIngresadas():
 @login_required
 def asignarUnidad(nombreUsuario, idSolicitud):
     if request.method == "POST":
+        archivo = request.files['documento']
+        nombreArchivo = secure_filename(archivo.filename)
+        binaryArchivo = archivo.read()
         solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
         unidad = request.form['unidad']
         solicitud.unidad = unidad
-        estado = Estado(
-            idInternoDepto = request.form['idInternoDepto'],
-            fkIdSolicitud = idSolicitud,
-            nombreUsuario = nombreUsuario,
-            idModificacion = request.form['idModificacion'],
-            descripcionProceso = request.form['descripcionProceso'],
-            fechaModificacion = request.form['fechaModificacion'],
-            designadoA = solicitud.unidad,
-            estadoActual = request.form['estadoActual']
-        )
-        db.session.add(estado)
-        db.session.commit()
-        return redirect(url_for('secreSolIngresadas'))
+        if nombreArchivo != '':            
+            estado = Estado(
+                idInternoDepto = request.form['idInternoDepto'],
+                fkIdSolicitud = idSolicitud,
+                nombreUsuario = nombreUsuario,
+                idModificacion = request.form['idModificacion'],
+                descripcionProceso = request.form['descripcionProceso'],
+                fechaModificacion = request.form['fechaModificacion'],
+                designadoA = solicitud.unidad,
+                estadoActual = request.form['estadoActual'],
+                nombreAntecedente = nombreArchivo,
+                antecedenteBinary = binaryArchivo
+            )
+            db.session.add(estado)
+            db.session.commit()
+            return redirect(url_for('secreSolIngresadas'))
+        else:
+            estado = Estado(
+                idInternoDepto = request.form['idInternoDepto'],
+                fkIdSolicitud = idSolicitud,
+                nombreUsuario = nombreUsuario,
+                idModificacion = request.form['idModificacion'],
+                descripcionProceso = request.form['descripcionProceso'],
+                fechaModificacion = request.form['fechaModificacion'],
+                designadoA = solicitud.unidad,
+                estadoActual = request.form['estadoActual']
+            )
+            db.session.add(estado)
+            db.session.commit()
+            return redirect(url_for('secreSolIngresadas'))
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     estado = Estado.query.filter_by(fkIdSolicitud = idSolicitud).first()
     return render_template('views/secretaria/asignarUnidad.html', solicitud=solicitud, estado=estado)
@@ -208,11 +301,11 @@ def solicitudesunidad(departamento, unidad):
 
 @app.route('/estadoSolicitud/<int:idSolicitud>', methods=['GET','POST'])
 @login_required
-def estadoSolicitud(idSolicitud):    
-    solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
-    estado = db.session.execute(db.select(Estado).filter_by(fkIdSolicitud=idSolicitud)).scalar_one()
+def estadoSolicitud(idSolicitud):
+    solicitud = get_solicitudes()
+    estado = db.session.execute(db.select(Estado).filter_by(fkIdSolicitud=idSolicitud)).first()
     estados = get_estados()
-    return render_template('views/secretaria/estadoSolicitud.html', solicitud=solicitud, estado=estado, estados=estados, idSolicitud=idSolicitud, fkIdSolicitud=idSolicitud)
+    return render_template('views/secretaria/estadoSolicitud.html', solicitud=solicitud, estados=estados, idSolicitud=idSolicitud, fkIdSolicitud=idSolicitud, estado=estado)
 
 #RUTAS FUNCIONARIO
 @app.route('/funcionario', methods=['GET','POST'])
@@ -237,19 +330,41 @@ def funSolPendientes():
 def gestionarSolicitud(id, idSolicitud, departamento, unidad):
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     if request.method == 'POST':
-        estado = Estado(
-            idInternoDepto = request.form['idInternoDepto'],
-            idModificacion = request.form['idModificacion'],
-            fkIdSolicitud = request.form['fkIdSolicitud'],
-            nombreUsuario = request.form['nombreUsuario'],
-            descripcionProceso = request.form['descripcionProceso'],
-            fechaModificacion = request.form['fechaModificacion'],
-            designadoA = request.form['designadoA'],
-            estadoActual = request.form['estadoActual']
-        )
-        db.session.commit()
-        solicitudes = get_solicitudes()
-        return render_template('views/funcionario/funSolIngresadas.html',solicitudes=solicitudes)
+        archivo = request.files['documento']
+        nombreArchivo = secure_filename(archivo.filename)
+        binaryArchivo = archivo.read()
+        if nombreArchivo != '':
+            estado = Estado(
+                idInternoDepto = request.form['idInternoDepto'],
+                idModificacion = request.form['idModificacion'],
+                fkIdSolicitud = request.form['fkIdSolicitud'],
+                nombreUsuario = request.form['nombreUsuario'],
+                descripcionProceso = request.form['descripcionProceso'],
+                fechaModificacion = request.form['fechaModificacion'],
+                designadoA = request.form['designadoA'],
+                estadoActual = request.form['estadoActual'],
+                nombreAntecedente = nombreArchivo,
+                antecedenteBinary = binaryArchivo
+            )
+            db.session.add(estado)
+            db.session.commit()
+            solicitudes = get_solicitudes()
+            return render_template('views/funcionario/funSolIngresadas.html',solicitudes=solicitudes)
+        else:
+            estado = Estado(
+                idInternoDepto = request.form['idInternoDepto'],
+                idModificacion = request.form['idModificacion'],
+                fkIdSolicitud = request.form['fkIdSolicitud'],
+                nombreUsuario = request.form['nombreUsuario'],
+                descripcionProceso = request.form['descripcionProceso'],
+                fechaModificacion = request.form['fechaModificacion'],
+                designadoA = request.form['designadoA'],
+                estadoActual = request.form['estadoActual']
+            )
+            db.session.add(estado)
+            db.session.commit()
+            solicitudes = get_solicitudes()
+            return render_template('views/funcionario/funSolIngresadas.html',solicitudes=solicitudes)
     estado = db.session.execute(db.select(Estado).filter_by(fkIdSolicitud=idSolicitud)).scalar_one()
     return render_template('views/funcionario/gestionarSolicitud.html', id=id, idSolicitud=idSolicitud, solicitud=solicitud, estado=estado, departamento=departamento, unidad=unidad)
 
@@ -313,6 +428,26 @@ def Oedit_solicitud(idSolicitud):
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     return render_template('views/editarSolicitud.html',solicitud=solicitud)
 
+#UPDATE SOLICITUD(Secretaría)
+#Edit de solicitud que redirige a la vista de secretaría
+@app.route('/sedits/<int:idSolicitud>', methods=['GET','POST']) 
+@login_required
+def Sedit_solicitud(idSolicitud):
+    if request.method == 'POST':
+        solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
+        solicitud.numero = request.form['numero']
+        solicitud.fechaDeIngreso = request.form['fechaDeIngreso']
+        solicitud.fechaDeVencimiento = request.form['fechaDeVencimiento']
+        solicitud.nombreSolicitante = request.form['nombreSolicitante']
+        solicitud.materia = request.form['materia']
+        solicitud.tipo = request.form['tipo']
+        solicitud.departamento = request.form['departamento']
+        solicitud.usuarioID = request.form['funcionario']
+        db.session.commit()
+        return redirect(url_for('secCrudSolicitudes'))
+    solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
+    return render_template('views/editarSolicitud.html',solicitud=solicitud)
+
 ###   DELETES   ###
 #DELETE SOLICITUD(Admin)
 @app.route('/adeletes/<int:idSolicitud>')
@@ -350,6 +485,24 @@ def odeletes(idSolicitud):
     solicitudes = get_solicitudes()
     return redirect(url_for('oirsCrudSolicitudes', solicitudes=solicitudes))
 
+#DELETE SOLICITUD(Secretaría)
+@app.route('/odeletes/<int:idSolicitud>')
+@login_required
+def sdeletes(idSolicitud):
+    estado = Estado.query.filter_by(fkIdSolicitud=idSolicitud).first()
+    solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
+    if estado == None:
+        db.session.delete(solicitud)
+        db.session.commit()
+        flash("¡Solicitud eliminada exitosamente!",'danger')
+    else:
+        db.session.delete(solicitud)
+        db.session.delete(estado)
+        db.session.commit()
+        flash("¡Solicitud eliminada exitosamente!",'danger')
+    solicitudes = get_solicitudes()
+    return redirect(url_for('secCrudSolicitudes', solicitudes=solicitudes))
+
 #DELETE USUARIO
 @app.route('/deleteu/<int:id>')
 @login_required
@@ -367,7 +520,7 @@ def delete_usuario(id):
 def download(idSolicitud):
     solicitud = db.session.execute(db.select(Solicitud).filter_by(idSolicitud=idSolicitud)).scalar_one()
     filename = solicitud.documento
-    return send_file(BytesIO(solicitud.docBinary), download_name=filename, as_attachment=True)
+    return send_file(BytesIO(solicitud.docBinary), download_name=filename)
 
 #Rutas de error
 #404 y 500
