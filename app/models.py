@@ -121,26 +121,10 @@ def get_estados():
         estados.append({"fkIdSolicitud":estado.fkIdSolicitud, "idInternoDepto":estado.idInternoDepto,  "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "nombreAntecedente":estado.nombreAntecedente, "antecedenteBinary":estado.antecedenteBinary, "estadoActual":estado.estadoActual})
     return estados
 
-"""
-#Función que retorna todos los estados de una solicitud
-def get_estados_solicitud(idSolicitud):
-    estados = []
-    all_estados = db.session.execute(db.select(Estado).filter_by(id=idSolicitud)).scalars()
-    for estado in all_estados:
-        estados.append({"id":estado.id, "fkIdSolicitud":estado.fkIdSolicitud, "idInternoDepto":estado.idInternoDepto,  "idModificacion":estado.idModificacion, "nombreUsuario":estado.nombreUsuario, "descripcionProceso":estado.descripcionProceso, "fechaModificacion":estado.fechaModificacion, "designadoA":estado.designadoA, "nombreAntecedente":estado.nombreAntecedente, "antecedenteBinary":estado.antecedenteBinary, "estadoActual":estado.estadoActual})
-    return estados
-"""
 #Función que determina si el archivo es válido o no
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-#Función que genera el id interno del departamento para cada modificación que reciba
-"""def generar_id_interno(id):
-    solicitud = db.session.execute(db.select(Solicitud).order_by(idSolicitud=id)).scalar_one()
-    estado = db.session.execute(db.count(Estado).order_by(fkSolicitud=id)).scalars()
-    if estado:
-"""
 
 @login_manager.user_loader
 def load_user(id):
