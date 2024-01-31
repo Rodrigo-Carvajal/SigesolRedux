@@ -11,7 +11,7 @@ UPLOAD_FOLDER = './SigesolRedux/app/static/docs'
 app = Flask(__name__)
 app.secret_key = '484267d6-5754-4b52-b66e-7da05e5ab7bd'
 csrf = CSRFProtect(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@localhost/sigesol5"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@localhost/sigesol"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 

@@ -1,8 +1,8 @@
 #Importaciones necesarias para el trabajo de este módulo:
 import os
 from io import BytesIO
-from app import app, db, login_manager, ALLOWED_EXTENSIONS, csrf
-from flask import render_template, request, url_for, redirect, session, flash, Blueprint, send_file
+from app import app, db
+from flask import render_template, request, url_for, redirect, flash, Blueprint, send_file
 from flask_login import login_required, login_user, logout_user
 from werkzeug.utils import secure_filename
 
@@ -91,7 +91,7 @@ def adminCrudSolicitudes():
         binary = archivo.read()
         if nombreArchivo != '':
             solicitud = Solicitud(
-                idSolicitud= request.form['idSolicitud'],
+                idSolicitud = id,
                 numero = request.form['numero'],
                 fechaDeIngreso = request.form['fechaDeIngreso'],
                 horaDeIngreso = request.form['horaDeIngreso'],
@@ -110,8 +110,8 @@ def adminCrudSolicitudes():
             flash("¡Solicitud creada exitosamente!", 'success')
             return redirect(url_for('adminCrudSolicitudes'))
         else:
-            solicitud = Solicitud(
-                idSolicitud= request.form['idSolicitud'],
+            solicitud = Solicitud(                
+                idSolicitud = id,
                 numero = request.form['numero'],
                 fechaDeIngreso = request.form['fechaDeIngreso'],
                 horaDeIngreso = request.form['horaDeIngreso'],
